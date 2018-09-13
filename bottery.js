@@ -1,4 +1,3 @@
-'use strict';
 
 // Importazione degli altri moduli
 var io = require('./src/io.js'); // Gestione input ed output
@@ -13,12 +12,6 @@ class Bottery extends EventEmitter {
   constructor(botName) {
     super();
     this.botName = botName;
-    this.start();
-  }
-
-  start() {
-
-    this.io.init();
     this.app = {
       start: Date.now(),
       autoprogress: false,  //ra01 veniva impostata da controls
@@ -49,10 +42,10 @@ class Bottery extends EventEmitter {
 
       loadMapByID: function(id) {
         console.info("Load map by id: '%s', edited: %s", id);
-        var raw = require('./src/bots/'+this.botName +'.js');
+        var raw = require('./src/bots/'+id +'.js');
 
         if (raw) {
-          app.loadMap(raw, id);
+          this.loadMap(raw, id);
           //ra01 localStorage.setItem("lastMap", id);
         } else {
           console.error("Map '%s' not found", id);
@@ -66,18 +59,24 @@ class Bottery extends EventEmitter {
           id: id
         };
 
-        app.rawMap = raw;
-        app.map = parseMap(raw);
-        app.map.name = id;
+        this.rawMap = raw;
+        this.map = parseMap(raw);
+        this.map.name = id;
 
-        app.pointer = new Pointer();
-
-        app.pointer.enterMap(app.map);
+        this.pointer = new Pointer();
+        debugger;
+        this.pointer.enterMap(this.map);
 
       }
 
     };
-    app.loadMapByID(startUpMapId, true);
+
+  }
+
+  start() {
+
+    this.app.loadMapByID(this.botName, true);
+
   }
 
   // Riceve in input un testo
@@ -85,14 +84,6 @@ class Bottery extends EventEmitter {
       io.input("chat", s);
   }
 
-  update() {
-    if (!app.paused && !app.ioLocked) {
-      app.pointer.update();
-    }
-    setTimeout(update, Math.pow(1 - app.updateSpeed, 2) * 450 + 100);
-  }
-
-
 }
 
-module.export = Bottery;
+module.exports = Bottery;

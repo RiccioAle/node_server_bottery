@@ -1,12 +1,20 @@
 
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot('258994103:AAH1ZQ4hwdrrA3f5ewO2lNLmOdrODXd9YMA');
+const slimbot = new Slimbot('');
 const Bottery = require('./bottery');
-const bottery = new Bottery('tesla');
+global.bottery = new Bottery('tesla');
+bottery.start();
 
+function update() {
+  //if (!app.paused && !app.ioLocked) {
+    bottery.app.pointer.update();
+  //}
+  setTimeout(update, Math.pow(1 - bottery.app.updateSpeed, 2) * 450 + 100);
+}
+update();
 
 // Registro listener per le risposte di Bottery
-Bottery.on('message', message => {
+bottery.on('message', message => {
     // Configuro il messaggio per Telegram
     let telegramMessage = message;
     slimbot.sendMessage(message.chat.id, telegramMessage);

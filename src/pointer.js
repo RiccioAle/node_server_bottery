@@ -93,7 +93,7 @@ Pointer.prototype.clearInput = function() {
 
 
     //ra01 ar t = Date.now() - app.start;
-    var t = Date.now() - app.start;
+    var t = Date.now() - bottery.app.start;
     this.timeInState = t - this.timeEnteredState;
     this.timeInState *= .001;
     //this.blackboard.setFromPath("TIME_IN_STATE", this.timeInState);
@@ -235,15 +235,14 @@ Pointer.prototype.exitState = function() {
 
 
 Pointer.prototype.enterState = function() {
-
+  debugger;
   //ra01 viz.removeExitClasses();
 
   //ra01 this.timeEnteredState = Date.now() - app.start;
-  this.timeEnteredState = Date.now() - app.start;
+  this.timeEnteredState = Date.now() - bottery.app.start;
   var pointer = this;
 
   // ra01 - non utilizzo jQuery
-
   //$.each(this.currentState.onEnter, function(index, action) {
   this.currentState.onEnter.forEach(function(action) {      //ra01
     performAction(action, pointer);

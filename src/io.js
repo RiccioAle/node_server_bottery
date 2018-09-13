@@ -49,7 +49,7 @@ var io = {
     localStorage.setItem("data-" + map.settings.id + "-" + key, val);
   },
 
-
+  // TODO : Rimuovere questa funzione
   textToSpeech: function(text, onFinish, onFinishEach) {
 
     console.log("Speaking: " + text);
@@ -175,7 +175,7 @@ var io = {
         io.attemptOutput();
       }
 
-      if (app.outputMode === "text") {
+      if (bottery.app.outputMode === "text") {
         var readTime = Math.sqrt(section.data.length) * 50 + 200;
         setTimeout(function() {
           outputDone();
@@ -199,7 +199,7 @@ var io = {
   input: function(source, s) {
     io.debugLog("Input received" + inParens(source) + ":" + inQuotes(s));
 
-    app.pointer.handleInput(s);
+    bottery.app.pointer.handleInput(s);
   },
 
   debugLog: function(s) {
