@@ -28,12 +28,12 @@ var io = {
 
   lastOutput: 0,
 
-  init: function() {
-    // ra01
+  
+  //init: function() {
     // io.logHolder = $("<div/>", {
     //   id: "debug-log",
     // }).appendTo($("#panel-debug .panel-content"));
-  },
+  //},
 
 
   loadMap: function(id, editVersion) {
