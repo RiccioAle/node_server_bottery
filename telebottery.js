@@ -2,26 +2,11 @@
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot('');
 const Bottery = require('./bottery');
-global.bottery = new Bottery('tesla');
-bottery.start();
+global.bottery = new Bottery('amIpsychic');
 
-function update() {
-  //if (!app.paused && !app.ioLocked) {
-    bottery.app.pointer.update();
-  //}
-  setTimeout(update, Math.pow(1 - bottery.app.updateSpeed, 2) * 450 + 100);
-}
-update();
-
-// Registro listener per le risposte di Bottery
 bottery.on('message', message => {
-    // Configuro il messaggio per Telegram
-    let telegramMessage = message;
-    slimbot.sendMessage(message.chat.id, telegramMessage);
-});
-
-
-// Register listeners
+  //Slimbot.message(message.chat.id, message);
+})
 
 // Register listeners
 slimbot.on('message', message => {

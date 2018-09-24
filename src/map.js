@@ -889,5 +889,6 @@ module.exports = {
   parseMap: parseMap,
   performAction: performAction,
   evaluateExpression: evaluateExpression,
-  evaluateCondition: evaluateCondition
+  evaluateCondition: evaluateCondition,
+  parseMapPath: parseMapPath
 }

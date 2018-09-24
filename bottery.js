@@ -1,8 +1,16 @@
 
 // Importazione degli altri moduli
-var io = require('./src/io.js'); // Gestione input ed output
+// var io = require('./src/io.js'); // Gestione input ed output
 var parseMap = require('./src/map.js').parseMap;
 var Pointer = require('./src/pointer.js');
+
+const serviceAccount = require('./serviceAccountKey.json')
+global.admin = require('firebase-admin');
+    
+admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://"+serviceAccount.project_id+".firebaseio.com"
+});    
 
 const EventEmitter = require('eventemitter3');
 
@@ -11,11 +19,15 @@ class Bottery extends EventEmitter {
   // Il costruttore riceve il nome del bot
   constructor(botName) {
     super();
+
+    // collego il database di firebase
+    this.database = admin.database();
+
     this.botName = botName;
     this.app = {
-      start: Date.now(),
+      start: 0,             //ra01 inizialmente il bot è fermo
       autoprogress: false,  //ra01 veniva impostata da controls
-      outputMode: 'text',   //ra01 veniva impostata da controls
+      //outputMode: 'text',   //ra01 rimossa perché l'output è sempre text
       autoprogress: false,  //ra01 veniva impostata da controls
       exitPause: 0.5,       //ra01 veniva impostata da controls
       pause: false,         //ra01 veniva impostata da controls
@@ -35,10 +47,7 @@ class Bottery extends EventEmitter {
         app.time.current = temp;
       },
 
-      // invio risposta al messaggio
-      sendMessage: function(message) {
-        this.emit('message', message);
-      },
+      
 
       loadMapByID: function(id) {
         console.info("Load map by id: '%s', edited: %s", id);
@@ -64,7 +73,6 @@ class Bottery extends EventEmitter {
         this.map.name = id;
 
         this.pointer = new Pointer();
-        debugger;
         this.pointer.enterMap(this.map);
 
       }
@@ -74,16 +82,40 @@ class Bottery extends EventEmitter {
   }
 
   start() {
-
+    this.app.start = Date.now(),
     this.app.loadMapByID(this.botName, true);
-
+    
+    update();
   }
 
   // Riceve in input un testo
-  inputText(text) {
-      io.input("chat", s);
+  inputText(chatId, text) {
+      
+      // salvo l'ultimo messaggio
+      this.database.ref('chats/'+chatId).set({
+         message: text
+      });
+    
+      // Se non ancora avviato faccio partire il bot
+      if (this.app.start == 0)
+        this.start();
+
+
+      //ra01 io.input("chat", text);
+      bottery.app.pointer.handleInput(text);
   }
 
+  // invio risposta al messaggio
+  sendMessage(message) {
+    this.emit('message', message);
+  }
+}
+
+function update() {
+  //if (!app.paused && !app.ioLocked) {
+    bottery.app.pointer.update();
+  //}
+  setTimeout(update, Math.pow(1 - bottery.app.updateSpeed, 2) * 450 + 100);
 }
 
 module.exports = Bottery;

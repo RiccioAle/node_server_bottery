@@ -20,7 +20,6 @@
  var isString = require('./tracery.js').isString; //ra01
  var inParens = require('./tracery.js').inParens; //ra01
  var inQuotes = require('./tracery.js').inQuotes; //ra01
- var chat = require('./chat.js'); //ra01
 
 
 var io = {
@@ -49,67 +48,67 @@ var io = {
     localStorage.setItem("data-" + map.settings.id + "-" + key, val);
   },
 
-  // TODO : Rimuovere questa funzione
-  textToSpeech: function(text, onFinish, onFinishEach) {
+  // ra01 Rimosso questa funzione perché l'output è solo testo
+  // textToSpeech: function(text, onFinish, onFinishEach) {
 
-    console.log("Speaking: " + text);
-    if (!Array.isArray(text)) {
-      text = [text];
-    }
-    var index = 0;
+  //   console.log("Speaking: " + text);
+  //   if (!Array.isArray(text)) {
+  //     text = [text];
+  //   }
+  //   var index = 0;
 
-    function iterate() {
-      var singleText = text[index];
+  //   function iterate() {
+  //     var singleText = text[index];
 
-      var msg = new SpeechSynthesisUtterance(singleText);
-      window.speechSynthesis.speak(msg);
+  //     var msg = new SpeechSynthesisUtterance(singleText);
+  //     window.speechSynthesis.speak(msg);
 
-      // Interrupting a current voice output?
-      if (app.speaking)
-        console.warn("Voice interrupt");
+  //     // Interrupting a current voice output?
+  //     if (app.speaking)
+  //       console.warn("Voice interrupt");
 
-      app.speaking = true;
+  //     app.speaking = true;
 
-      var finished = false;
+  //     var finished = false;
 
-      function finish() {
-        if (!finished) {
-          console.log("finish speaking");
-          app.speaking = false;
+  //     function finish() {
+  //       if (!finished) {
+  //         console.log("finish speaking");
+  //         app.speaking = false;
 
-          if (onFinishEach)
-            onFinishEach(singleText);
+  //         if (onFinishEach)
+  //           onFinishEach(singleText);
 
-          index++;
-          if (index < text.length) {
-            iterate();
-          } else {
-            if (onFinish)
-              onFinish();
-          }
-          finished = true;
-        }
-      }
+  //         index++;
+  //         if (index < text.length) {
+  //           iterate();
+  //         } else {
+  //           if (onFinish)
+  //             onFinish();
+  //         }
+  //         finished = true;
+  //       }
+  //     }
 
-      msg.onend = finish;
+  //     msg.onend = finish;
 
-      // Allow finishing events with either event end, or timeout (for broken audio)
-      setTimeout(finish, singleText.length * 100 + 100);
+  //     // Allow finishing events with either event end, or timeout (for broken audio)
+  //     setTimeout(finish, singleText.length * 100 + 100);
 
-    }
+  //   }
 
-    iterate();
-  },
+  //   iterate();
+  // },
 
-
+  // ra01 Lasciato la funzione perché presente nel Josn del bot, ma non fa nulla
   playSound: function(filename, volume) {
-    if (volume === undefined)
-      volume = .8;
+    // if (volume === undefined)
+    //   volume = .8;
 
-    var aud = new Audio("audio/" + filename);
-    //aud.setVelocity(Math.random()),
-    aud.volume = Math.pow(app.sfxVolume * volume, 2);
-    aud.play();
+    // var aud = new Audio("audio/" + filename);
+    // //aud.setVelocity(Math.random()),
+    // aud.volume = Math.pow(app.sfxVolume * volume, 2);
+    // aud.play();
   },
 
   output: function(s, onFinishEach, onFinish) {
@@ -165,7 +164,10 @@ var io = {
       // Callback on text if text-only
 
       // Activate Chat with timer
-      chat.say(0, section.data);
+      //ra01 tolto utilizzo della chat
+      //chat.say(0, section.data);
+      console.log(section.data);
+      bottery.sendMessage(section.data);
 
       // on finish
       function outputDone() {
@@ -175,17 +177,18 @@ var io = {
         io.attemptOutput();
       }
 
-      if (bottery.app.outputMode === "text") {
+      // ra01 L'outputMode solo testo
+      //if (bottery.app.outputMode === "text") {
         var readTime = Math.sqrt(section.data.length) * 50 + 200;
         setTimeout(function() {
           outputDone();
         }, readTime);
-      } else {
+      //} else {
         // ** both text+speech & speech should trigger this??
-        io.textToSpeech(section.data, function() {
-          outputDone();
-        });
-      }
+      //  io.textToSpeech(section.data, function() {
+      //    outputDone();
+      //  });
+      //}
 
       io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
     } else {
@@ -195,12 +198,12 @@ var io = {
     }
   },
 
-  // Some input has arrived, by voice or text
-  input: function(source, s) {
-    io.debugLog("Input received" + inParens(source) + ":" + inQuotes(s));
-
-    bottery.app.pointer.handleInput(s);
-  },
+  // ra01 Rimosso la funzione ed aggiunta in bottery
+  // Some input has arrived, by voice or text 
+  //input: function(source, s) {
+    //io.debugLog("Input received" + inParens(source) + ":" + inQuotes(s));
+    //app.pointer.handleInput(s);
+  //},
 
   debugLog: function(s) {
     // ra01

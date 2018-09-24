@@ -20,8 +20,8 @@ var BBO = require('./blackboard3.js').BBO;// Oggetti presenti nella lavagna
 var performAction = require('./map.js').performAction; //ra01
 var evaluateCondition = require('./map.js').evaluateCondition; //ra01
 var evaluateExpression = require('./map.js').evaluateExpression; //ra01
+var parseMapPath = require('./map.js').parseMapPath; //ra01
 var io = require('./io.js'); // Gestione input ed output
-var chat = require('./chat.js'); //ra01
 
 
 
@@ -235,7 +235,7 @@ Pointer.prototype.exitState = function() {
 
 
 Pointer.prototype.enterState = function() {
-  debugger;
+  
   //ra01 viz.removeExitClasses();
 
   //ra01 this.timeEnteredState = Date.now() - app.start;
@@ -254,14 +254,15 @@ Pointer.prototype.enterState = function() {
   if (this.currentState.chips) {
     if (isString(this.currentState.chips))
       this.currentState.chips = [this.currentState.chips];
-    chat.setChips(this.currentState.chips.map(function(chip) {
-      var s = pointer.flatten(chip);
+    //ra01 tolto utilizzo della chat
+    //chat.setChips(this.currentState.chips.map(function(chip) {
+    // var s = pointer.flatten(chip);
 
-      return {
-        displayText: s,
-        inputText: s
-      }
-    }));
+    //  return {
+    //    displayText: s,
+    //    inputText: s
+    //  }
+    //}));
   }
 
 
