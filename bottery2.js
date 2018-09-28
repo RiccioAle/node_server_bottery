@@ -1,6 +1,5 @@
 
 // Importazione degli altri moduli
-// var io = require('./src/io.js'); // Gestione input ed output
 var parseMap = require('./src/map.js').parseMap;
 var Pointer = require('./src/pointer.js');
 
@@ -16,8 +15,6 @@ const EventEmitter = require('eventemitter3');
 
 class Bottery extends EventEmitter {
 
-  
-
   // Il costruttore riceve il nome del bot
   constructor(botName) {
     super();
@@ -28,33 +25,12 @@ class Bottery extends EventEmitter {
     // memorizzo nome del bot e id della chat
     this.botName = botName;
     this.chatId = 0;
+    this.app = [];
+    this.loadMapByID(botName);
+    //update();
+  }
 
-    this.app = {
-      start: 0,             //ra01 inizialmente il bot è fermo
-      autoprogress: false,  //ra01 veniva impostata da controls
-      //outputMode: 'text',   //ra01 rimossa perché l'output è sempre text
-      autoprogress: false,  //ra01 veniva impostata da controls
-      exitPause: 0.5,       //ra01 veniva impostata da controls
-      pause: false,         //ra01 veniva impostata da controls
-      updateSpeed: 0.5,     //ra01 veniva impostata da controls
-
-      // Time
-      time: {
-        start: Date.now() * .001,
-        current: 0,
-        elapsed: .1,
-        frame: 0,
-      },
-
-      updateTime: function() {
-        var temp = Date.now() * .001 - app.time.start;
-        app.time.elapsed = temp - app.time.current;
-        app.time.current = temp;
-      },
-
-      
-
-      loadMapByID: function(id) {
+  loadMapByID(id) {
         console.info("Load map by id: '%s', edited: %s", id);
         var raw = require('./src/bots/'+id +'.js');
 
@@ -64,10 +40,11 @@ class Bottery extends EventEmitter {
         } else {
           console.error("Map '%s' not found", id);
         }
-      },
+  }
 
-      loadMap: function(raw, id) {
-        console.info("Starting '%s'", id)
+  loadMap(raw, id) {
+
+      console.info("Starting '%s'", id)
         if (!raw.settings)
         raw.settings = {
           id: id
@@ -77,21 +54,6 @@ class Bottery extends EventEmitter {
         this.map = parseMap(raw);
         this.map.name = id;
 
-        this.pointer = new Pointer();
-        this.pointer.enterMap(this.map);
-        this.pointer.goTo('origin');
-
-      }
-
-    };
-
-  }
-
-  start() {
-    this.app.start = Date.now(),
-    this.app.loadMapByID(this.botName, true);
-    
-    update();
   }
 
   // Riceve in input un testo
@@ -101,14 +63,14 @@ class Bottery extends EventEmitter {
       this.database.ref('chats/'+chatId).set({
          message: text
       });
-    
-      // Se non ancora avviato faccio partire il bot
-      if (this.app.start == 0)
-        this.start();
 
+      if (this.app.indexOf(chatId)==0) {
+        this.app[chatId] = new App(chatId);
+      }
 
       //ra01 io.input("chat", text);
       bottery.app.pointer.handleInput(text);
+      update();
   }
 
   // invio risposta al messaggio
@@ -118,10 +80,14 @@ class Bottery extends EventEmitter {
 }
 
 function update() {
-  //if (!app.paused && !app.ioLocked) {
-    bottery.app.pointer.update();
-  //}
-  setTimeout(update, Math.pow(1 - bottery.app.updateSpeed, 2) * 450 + 100);
+  
+    bottery.app.forEach(element => {
+      element.pointer.update();
+    });
+  
+  setTimeout(update, Math.pow(1 - 0.5, 2) * 450 + 100);
 }
+
+
 
 module.exports = Bottery;

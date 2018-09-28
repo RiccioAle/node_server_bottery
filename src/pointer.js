@@ -440,7 +440,7 @@ Pointer.prototype.enterMap = function(map, blackboard) {
   // Load any saved
 
 
-  this.goTo("origin");
+  //this.goTo("origin");
 
 };
 

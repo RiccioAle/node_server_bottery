@@ -1,15 +1,19 @@
 
 const Slimbot = require('slimbot');
-const slimbot = new Slimbot('');
-const Bottery = require('./bottery');
-global.bottery = new Bottery('amIpsychic');
+const slimbot = new Slimbot('600516703:AAFnCfuojgh84YTzdd8jV9N0sdwkuc316nM');
+const Bottery = require('./bottery2');
+
+// Creo un oggetto per ogni chat
+global.bottery = new Bottery('tesla');
 
 bottery.on('message', message => {
-  //Slimbot.message(message.chat.id, message);
-})
+  slimbot.sendMessage(bottery.chatId, message);
+});
+
 
 // Register listeners
 slimbot.on('message', message => {
+  
   // reply when user sends a message
   console.log('Riceived message');
   bottery.inputText(message.chat.id, message.text);
