@@ -35,18 +35,18 @@ var io = {
   //},
 
 
-  loadMap: function(id, editVersion) {
-    var found = localStorage.getItem(id);
-    if (!found)
-      return undefined;
+  // loadMap: function(id, editVersion) {
+  //   var found = localStorage.getItem(id);
+  //   if (!found)
+  //     return undefined;
 
-    found = JSON.parse(found);
-  },
+  //   found = JSON.parse(found);
+  // },
 
 
-  saveData: function(map, key, val) {
-    localStorage.setItem("data-" + map.settings.id + "-" + key, val);
-  },
+  // saveData: function(map, key, val) {
+  //   localStorage.setItem("data-" + map.settings.id + "-" + key, val);
+  // },
 
   // ra01 Rimosso questa funzione perché l'output è solo testo
   // textToSpeech: function(text, onFinish, onFinishEach) {
@@ -171,18 +171,18 @@ var io = {
 
       // on finish
       function outputDone() {
-        if (section.onFinish)
-          section.onFinish();
-        io.isOccupied = false;
-        io.attemptOutput();
+         if (section.onFinish)
+           section.onFinish();
+         io.isOccupied = false;
+         io.attemptOutput();
       }
 
-      // ra01 L'outputMode solo testo
-      //if (bottery.app.outputMode === "text") {
-        var readTime = Math.sqrt(section.data.length) * 50 + 200;
-        setTimeout(function() {
+      // ra01 L'outputMode solo testo ma non lascio il tempo di leggere
+      // if (bottery.app.outputMode === "text") {
+         var readTime = Math.sqrt(section.data.length) * 50 + 200;
+         setTimeout(function() {
           outputDone();
-        }, readTime);
+      }, readTime);
       //} else {
         // ** both text+speech & speech should trigger this??
       //  io.textToSpeech(section.data, function() {
@@ -190,7 +190,7 @@ var io = {
       //  });
       //}
 
-      io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
+      //io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
     } else {
       // push it back on the queue
       if (section !== undefined)
@@ -205,14 +205,14 @@ var io = {
     //app.pointer.handleInput(s);
   //},
 
-  debugLog: function(s) {
+  //debugLog: function(s) {
     // ra01
     // io.logHolder.append("<div class='debug-line'>" + s + "<div/>");
     // // scroll to bottom
     // if (io.logHolder[0]) {
     //   io.logHolder.scrollTop(io.logHolder[0].scrollHeight);
     // }
-  }
+  //}
 }
 
 

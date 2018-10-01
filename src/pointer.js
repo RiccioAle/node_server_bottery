@@ -24,9 +24,10 @@ var parseMapPath = require('./map.js').parseMapPath; //ra01
 var io = require('./io.js'); // Gestione input ed output
 
 
-
-var Pointer = function() {
+// Riceve l'id della chat
+var Pointer = function(app) {
   var pointer = this;
+  this.app = app;  //ra01 Aggiunto l'oggetto app
   this.exitCountdown = 0;
   this.inputLog = [];
   this.analyzedExits = [];
@@ -61,7 +62,7 @@ Pointer.prototype.set = function(path, val) {
   var last = steps[steps.length - 1];
 
   if (steps.length === 1 && steps[0].startsWith("_")) {
-    io.saveData(app.map, steps[0], val)
+    //io.saveData(app.map, steps[0], val)
   }
 }
 
@@ -93,7 +94,7 @@ Pointer.prototype.clearInput = function() {
 
 
     //ra01 ar t = Date.now() - app.start;
-    var t = Date.now() - bottery.app.start;
+    var t = Date.now() - this.app.start;
     this.timeInState = t - this.timeEnteredState;
     this.timeInState *= .001;
     //this.blackboard.setFromPath("TIME_IN_STATE", this.timeInState);
@@ -239,7 +240,7 @@ Pointer.prototype.enterState = function() {
   //ra01 viz.removeExitClasses();
 
   //ra01 this.timeEnteredState = Date.now() - app.start;
-  this.timeEnteredState = Date.now() - bottery.app.start;
+  this.timeEnteredState = Date.now() - this.app.start;
   var pointer = this;
 
   // ra01 - non utilizzo jQuery
