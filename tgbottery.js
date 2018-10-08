@@ -3,6 +3,8 @@ const Slimbot = require('slimbot');
 const slimbot = new Slimbot('600516703:AAFnCfuojgh84YTzdd8jV9N0sdwkuc316nM');
 const bottery = require('./bottery3');
 
+bottery('mastermind', 123, 'prova');
+//bottery('amIPsychic', 124, 'prova');
 
 // Register listeners
 slimbot.on('message', message => {
@@ -19,4 +21,4 @@ slimbot.on('edited_message', edited_message => {
 });
 
 // Call API
-slimbot.startPolling();
+//slimbot.startPolling();

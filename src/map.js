@@ -23,7 +23,7 @@ var splitOnUnprotected = require('./tracery.js').splitOnUnprotected; //ra01
 var getUnprotectedIndices = require('./tracery.js').getUnprotectedIndices; //ra01
 var splitIntoTopSections = require('./tracery.js').splitIntoTopSections; //ra01
 var tracery = require('./tracery.js').tracery; //ra01
-var io = require('./io.js'); // Gestione input ed output
+//var io = require('./io.js'); // Gestione input ed output
 
 
 
@@ -744,7 +744,8 @@ function performAction(action, pointer) {
 
 
       //s = pointer.grammar.flatten(s);
-      io.output(pointer.flatten(action.rule));
+      //io.output(pointer.flatten(action.rule));
+      pointer.output(pointer.flatten(action.rule));
       break;
     default:
       console.warn("unkown action type " + action.actionType, action);

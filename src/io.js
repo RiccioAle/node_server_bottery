@@ -153,7 +153,7 @@ var io = {
   // Gets queued text and outputs it.
   // This is called recursively
   attemptOutput: function() {
-
+    debugger;
     var section = io.outputQueue.shift();
 
     if (section && !io.isOccupied) {
@@ -167,7 +167,7 @@ var io = {
       //ra01 tolto utilizzo della chat
       //chat.say(0, section.data);
       console.log(section.data);
-      bottery.sendMessage(section.data);
+     // bottery.sendMessage(section.data);
 
       // on finish
       function outputDone() {

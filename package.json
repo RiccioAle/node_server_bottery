@@ -1,0 +1,24 @@
+{
+  "name": "node_server_bottery",
+  "version": "1.0.0",
+  "description": "This in an implementation of bottery server side \u0000",
+  "main": "tgbottery.js",
+  "dependencies": {
+    "firebase-admin": "^6.0.0",
+    "slimbot": "^0.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RiccioAle/node_server_bottery.git"
+  },
+  "author": "Alessio Ricci",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RiccioAle/node_server_bottery/issues"
+  },
+  "homepage": "https://github.com/RiccioAle/node_server_bottery#readme"
+}

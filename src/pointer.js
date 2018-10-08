@@ -20,17 +20,20 @@ var BBO = require('./blackboard3.js').BBO;// Oggetti presenti nella lavagna
 var performAction = require('./map.js').performAction; //ra01
 var evaluateCondition = require('./map.js').evaluateCondition; //ra01
 var evaluateExpression = require('./map.js').evaluateExpression; //ra01
-var parseMapPath = require('./map.js').parseMapPath; //ra01
-var io = require('./io.js'); // Gestione input ed output
-
+var parseMapPath = require('./map.js').parseMapPath; //ra01   
 
 // Riceve l'id della chat
 var Pointer = function(app) {
   var pointer = this;
+
   this.app = app;  //ra01 Aggiunto l'oggetto app
+  this.outputQueue = [];  //ra01 preso da io
+  this.lastOutput = 0;    //ra01 preso da io
+
   this.exitCountdown = 0;
   this.inputLog = [];
   this.analyzedExits = [];
+  
 }
 
 Pointer.prototype.get = function(path) {
@@ -97,6 +100,7 @@ Pointer.prototype.clearInput = function() {
     var t = Date.now() - this.app.start;
     this.timeInState = t - this.timeEnteredState;
     this.timeInState *= .001;
+    t *= .001;
     //this.blackboard.setFromPath("TIME_IN_STATE", this.timeInState);
 
     if (this.selectedExit)
@@ -104,6 +108,11 @@ Pointer.prototype.clearInput = function() {
 
 
     this.updateExits();
+
+    // ra01 - riaggiornamento puntatore stato
+    //if (t <60)
+       //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
+       //setTimeout(function () {pointer.update()}, 10000);
   }
 
 Pointer.prototype.updateExits = function() {
@@ -207,6 +216,13 @@ Pointer.prototype.goTo = function(key, useExit) {
     this.currentState = nextState;
     if (this.currentState) {
      //ra01 viz.setClassesExclusive(this.currentState, "active");
+    
+      // salvo l'ultimo stato
+      console.log(this.blackboard.children);
+      admin.database().ref('chats/'+this.app.chatId).set({
+        currentState: this.currentState.key,
+       // blackboard: this.blackboard.children.f
+      });
 
       this.enterState(this.currentState);
     }
@@ -380,7 +396,7 @@ Pointer.prototype.collectExits = function() {
 };
 
 Pointer.prototype.enterMap = function(map, blackboard) {
-
+  pointer = this; //ra01
   this.map = map;
   this.currentState = undefined;
 
@@ -440,12 +456,110 @@ Pointer.prototype.enterMap = function(map, blackboard) {
 
   // Load any saved
 
+  // ra01 determino l'ultimo stato
+  let ref = admin.database().ref('chats/'+this.app.chatId+'/currentState');
+  ref.once('value', function(snapshot) {
+    debugger;
+    if (snapshot.val() !== null)
+      pointer.goTo(snapshot.val())
+    else  
+      pointer.goTo('origin');
+  }, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
+  });
 
+  
   //this.goTo("origin");
-
+  
 };
 
+// Funzione presa da io per l'emissione dell'output
+Pointer.prototype.output = function (s, onFinishEach, onFinish) {
+  pointer = this;
+  if (!Array.isArray(s)) {
+    if (!isString(s)) {
+      s = [s + ""];
+    } else {
+      s = s.split("\n");
+    }
+  }
 
+  // remove any empty strings
+  s = s.filter(function(s2) {
+    return s2.trim().length > 0;
+  });
+
+  // for each section to say, add it to the queue
+  // with handlers on what to do when its done outputting
+  for (var i = 0; i < s.length; i++) {
+
+    var s2 = {
+      data: s[i],
+    }
+    if (i < s.length - 1) {
+      s2.onFinish = onFinishEach;
+    } else {
+      if (onFinish)
+        s2.onFinish = function() {
+          onFinish();
+          if (onFinishEach)
+            onFinishEach();
+        }
+    }
+    pointer.outputQueue.push(s2);
+  }
+
+  pointer.attemptOutput();
+}
+// Funzione presa da io per l'emissione dell'output
+// Gets queued text and outputs it.
+// This is called recursively
+Pointer.prototype.attemptOutput = function() {
+  debugger;
+  pointer = this;
+  var section = pointer.outputQueue.shift();
+
+  if (section && !pointer.isOccupied) {
+
+    // Occupy this channel when in use
+    pointer.isOccupied = true;
+
+    // Callback on text if text-only
+
+    // Activate Chat with timer
+    //ra01 tolto utilizzo della chat
+    //chat.say(0, section.data);
+    console.log(pointer.app.chatId + ': ' + section.data);
+   // bottery.sendMessage(section.data);
+
+    // on finish
+    function outputDone() {
+       if (section.onFinish)
+         section.onFinish();
+         pointer.isOccupied = false;
+         pointer.attemptOutput();
+    }
+
+    // ra01 L'outputMode solo testo ma non lascio il tempo di leggere
+    // if (bottery.app.outputMode === "text") {
+       var readTime = Math.sqrt(section.data.length) * 50 + 200;
+       setTimeout(function() {
+        outputDone();
+    }, readTime);
+    //} else {
+      // ** both text+speech & speech should trigger this??
+    //  io.textToSpeech(section.data, function() {
+    //    outputDone();
+    //  });
+    //}
+
+    //io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
+  } else {
+    // push it back on the queue
+    if (section !== undefined)
+    pointer.outputQueue.unshift(section);
+  }
+}
 
 function updateExit(exitAnalysis, pointer) {
 
@@ -497,5 +611,6 @@ function updateCondition(conditionAnalysis, pointer) {
 
   updateExit(conditionAnalysis.exitAnalysis, pointer);
 }
+
 
 module.exports = Pointer;
