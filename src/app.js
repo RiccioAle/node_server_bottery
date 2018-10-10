@@ -6,7 +6,7 @@ class App {
         this.start = Date.now();             
         this.map = map;
         this.chatId = chatId;
-        this.autoprogress= false;    
+        this.autoprogress= false; 
         this.pointer = new Pointer(this);
         this.pointer.enterMap(map);
         

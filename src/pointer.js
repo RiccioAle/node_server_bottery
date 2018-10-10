@@ -24,7 +24,7 @@ var parseMapPath = require('./map.js').parseMapPath; //ra01
 
 // Riceve l'id della chat
 var Pointer = function(app) {
-  var pointer = this;
+  //var pointer = this;
 
   this.app = app;  //ra01 Aggiunto l'oggetto app
   this.outputQueue = [];  //ra01 preso da io
@@ -83,6 +83,7 @@ Pointer.prototype.handleInput = function(input) {
       this.blackboard.setFromPath("INPUT_NUMBER", val);
     this.updateExits();
   }
+  
 }
 
 Pointer.prototype.clearInput = function() {
@@ -110,9 +111,12 @@ Pointer.prototype.clearInput = function() {
     this.updateExits();
 
     // ra01 - riaggiornamento puntatore stato
-    //if (t <60)
-       //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
-       //setTimeout(function () {pointer.update()}, 10000);
+    if (t < this.app.chatId) {
+      //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
+      setTimeout(function () {
+        pointer.update()
+       }, 1000);
+    }
   }
 
 Pointer.prototype.updateExits = function() {
@@ -396,7 +400,7 @@ Pointer.prototype.collectExits = function() {
 };
 
 Pointer.prototype.enterMap = function(map, blackboard) {
-  pointer = this; //ra01
+  var pointer = this; //ra01
   this.map = map;
   this.currentState = undefined;
 
@@ -475,7 +479,7 @@ Pointer.prototype.enterMap = function(map, blackboard) {
 
 // Funzione presa da io per l'emissione dell'output
 Pointer.prototype.output = function (s, onFinishEach, onFinish) {
-  pointer = this;
+  var pointer = this;
   if (!Array.isArray(s)) {
     if (!isString(s)) {
       s = [s + ""];
@@ -516,7 +520,7 @@ Pointer.prototype.output = function (s, onFinishEach, onFinish) {
 // This is called recursively
 Pointer.prototype.attemptOutput = function() {
   debugger;
-  pointer = this;
+  var pointer = this;
   var section = pointer.outputQueue.shift();
 
   if (section && !pointer.isOccupied) {
