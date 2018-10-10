@@ -28,7 +28,6 @@ var Pointer = function(app) {
 
   this.app = app;  //ra01 Aggiunto l'oggetto app
   this.outputQueue = [];  //ra01 preso da io
-  this.lastOutput = 0;    //ra01 preso da io
 
   this.exitCountdown = 0;
   this.inputLog = [];
@@ -111,11 +110,24 @@ Pointer.prototype.clearInput = function() {
     this.updateExits();
 
     // ra01 - riaggiornamento puntatore stato
-    if (t < this.app.chatId) {
+    //if (t < this.app.chatId) {
+    if (this.previusState === undefined ||
+      this.previusState !== this.currentState) {
+      this.previusState = this.currentState;
       //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
       setTimeout(function () {
         pointer.update()
        }, 1000);
+    } else {
+       // salvo l'ultimo stato 
+       this.blackboard.children.INPUT = null;
+       this.blackboard.children.INPUT_NUMBER = null;
+       console.log(this.blackboard);
+       admin.database().ref(this.app.map.botName+'/chats/'+this.app.chatId).set({
+         currentState: this.currentState.key,
+         blackboard: this.blackboard
+       });
+       throw new Error('End loop');
     }
   }
 
@@ -220,14 +232,7 @@ Pointer.prototype.goTo = function(key, useExit) {
     this.currentState = nextState;
     if (this.currentState) {
      //ra01 viz.setClassesExclusive(this.currentState, "active");
-    
-      // salvo l'ultimo stato
-      console.log(this.blackboard.children);
-      admin.database().ref('chats/'+this.app.chatId).set({
-        currentState: this.currentState.key,
-       // blackboard: this.blackboard.children.f
-      });
-
+      
       this.enterState(this.currentState);
     }
   }
@@ -403,7 +408,7 @@ Pointer.prototype.enterMap = function(map, blackboard) {
   var pointer = this; //ra01
   this.map = map;
   this.currentState = undefined;
-
+  this.previusState = undefined;      //ra01 Salva lo stato precedente
 
   if (!map.grammar)
     map.grammar = {};
@@ -461,10 +466,11 @@ Pointer.prototype.enterMap = function(map, blackboard) {
   // Load any saved
 
   // ra01 determino l'ultimo stato
-  let ref = admin.database().ref('chats/'+this.app.chatId+'/currentState');
+  let ref = admin.database().ref(this.app.map.botName+'/chats/'+this.app.chatId+'/currentState');
   ref.once('value', function(snapshot) {
     debugger;
     if (snapshot.val() !== null)
+      // TODO inizializzare il blackboard
       pointer.goTo(snapshot.val())
     else  
       pointer.goTo('origin');

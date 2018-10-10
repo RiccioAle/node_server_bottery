@@ -3,8 +3,8 @@ const Slimbot = require('slimbot');
 const slimbot = new Slimbot('600516703:AAFnCfuojgh84YTzdd8jV9N0sdwkuc316nM');
 const bottery = require('./bottery3');
 
-bottery('tesla', 30, 'prova');
-bottery('tesla', 60, 'prova');
+bottery('mastermind', 10, 'prova');
+//bottery('tesla', 60, 'prova');
 
 // Register listeners
 slimbot.on('message', message => {

@@ -8,8 +8,7 @@ class App {
         this.chatId = chatId;
         this.autoprogress= false; 
         this.pointer = new Pointer(this);
-        this.pointer.enterMap(map);
-        
+        this.pointer.enterMap(map);       
         
     }
 
