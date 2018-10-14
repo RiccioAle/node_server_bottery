@@ -11,84 +11,31 @@ admin.initializeApp({
         databaseURL: "https://"+serviceAccount.project_id+".firebaseio.com"
 });    
 
-const EventEmitter = require('eventemitter3');
+// Definizione della funzione bottery
+var bottery = async (botName, chatId, message) => {
 
-class Bottery extends EventEmitter {
+  // carico il bot richiesto
+  console.info('Load map '+botName);
+  var raw = require('./src/bots/'+botName +'.js');
 
-  // Il costruttore riceve il nome del bot
-  constructor(botName) {
-    super();
-
-    // collego il database di firebase
-    this.database = admin.database();
-
-    // memorizzo nome del bot e id della chat
-    this.botName = botName;
-    this.chatId = 0;
-    this.app = [];
-    this.loadMapByID(botName);
-    //update();
-  }
-
-  loadMapByID(id) {
-        console.info("Load map by id: '%s', edited: %s", id);
-        var raw = require('./src/bots/'+id +'.js');
-
-        if (raw) {
-          this.loadMap(raw, id);
-          //ra01 localStorage.setItem("lastMap", id);
-        } else {
-          console.error("Map '%s' not found", id);
-        }
-  }
-
-  loadMap(raw, id) {
-
-      console.info("Starting '%s'", id)
-        if (!raw.settings)
-        raw.settings = {
-          id: id
-        };
-
-        this.rawMap = raw;
-        this.map = parseMap(raw);
-        this.map.name = id;
-
-  }
-
-  // Riceve in input un testo
-  inputText(chatId, text) {
+  // Bot non trovato
+  if (!raw) 
+      throw new Error('Map '+botName+' not found');
       
-      // salvo l'ultimo messaggio
-      this.database.ref('chats/'+chatId).set({
-         message: text
-      });
+  console.info('Starting '+ botName);
+  if (!raw.settings)
+    raw.settings = {
+      id: botName
+    };
 
-      if (this.app[chatId] === undefined) {
-        this.app[chatId] = new App(chatId);
-        this.app[chatId].go();
-      }
+  var rawMap = raw;
+  var map = parseMap(raw);
+  map.name = botName;
 
-      //ra01 io.input("chat", text);
-      bottery.app[chatId].pointer.handleInput(text);
-      update();
-  }
+  var app = new App(chatId, message, map);
+  // app.pointer.enterMap(map).then(
+  //   app.update()
+  // );       
+};
 
-  // invio risposta al messaggio
-  sendMessage(message) {
-    this.emit('message', message);
-  }
-}
-
-function update() {
-  
-    bottery.app.forEach(element => {
-      element.pointer.update();
-    });
-  
-  setTimeout(update, Math.pow(1 - 0.5, 2) * 450 + 100);
-}
-
-
-
-module.exports = Bottery;
+module.exports = bottery;

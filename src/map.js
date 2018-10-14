@@ -869,7 +869,8 @@ function evaluateCondition(condition, pointer) {
     case "value":
       switch (condition.target) {
         case "wait":
-          return pointer.timeInState > evaluateExpression(condition.expression, pointer)
+          //return pointer.timeInState > evaluateExpression(condition.expression, pointer) ra01
+          return true; //ra01
           break;
         default:
           console.warn("unknown value condition: " + condition.target);

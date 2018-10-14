@@ -37,6 +37,15 @@ var Pointer = function(app) {
 
 Pointer.prototype.get = function(path) {
 
+  // ra01  The value must be set to undefined for recalculate
+  if (path.type == 'path') {
+    path.steps.forEach(function(step) {
+      if (step.type == 'path' && step.value!==undefined) {
+        step.value = null;
+      }
+    });
+  }
+
   // Parse a plaintext path into steps
   if (isString(path))
     path = parseMapPath(path);
@@ -72,6 +81,7 @@ Pointer.prototype.handleInput = function(input) {
   if (input === "help") {
     // list various inputs
 
+  } else if (input === "start") {       //ra01 se start non elaboro ma avvio solo
   } else {
     console.log("INPUT: " + inQuotes(input));
     this.inputLog.push(input);
@@ -90,11 +100,12 @@ Pointer.prototype.clearInput = function() {
     this.blackboard.setFromPath("INPUT", undefined);
     this.lastInputNumber = undefined;
     this.blackboard.setFromPath("INPUT_NUMBER", undefined);
-  },
+  }
 
   Pointer.prototype.update = function() {
     var pointer = this;
-
+    // number of loop for change state
+    pointer.app.numberUpdate++;
 
     //ra01 ar t = Date.now() - app.start;
     var t = Date.now() - this.app.start;
@@ -111,23 +122,25 @@ Pointer.prototype.clearInput = function() {
 
     // ra01 - riaggiornamento puntatore stato
     //if (t < this.app.chatId) {
-    if (this.previusState === undefined ||
-      this.previusState !== this.currentState) {
+    if (pointer.app.numberUpdate < 100 && (
+      this.previusState === undefined ||
+      this.previusState !== this.currentState)) {
       this.previusState = this.currentState;
       //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
-      setTimeout(function () {
-        pointer.update()
-       }, 1000);
+      //  setTimeout(function () {
+      //    pointer.update()
+      //   }, 1000);
+      this.update();
     } else {
        // salvo l'ultimo stato 
        this.blackboard.children.INPUT = null;
        this.blackboard.children.INPUT_NUMBER = null;
+       this.blackboard.value = null;
        console.log(this.blackboard);
-       admin.database().ref(this.app.map.botName+'/chats/'+this.app.chatId).set({
+       admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId).set({
          currentState: this.currentState.key,
          blackboard: this.blackboard
        });
-       throw new Error('End loop');
     }
   }
 
@@ -404,7 +417,8 @@ Pointer.prototype.collectExits = function() {
   // });
 };
 
-Pointer.prototype.enterMap = function(map, blackboard) {
+Pointer.prototype.enterMap = async function(map, blackboard)  {
+  debugger;
   var pointer = this; //ra01
   this.map = map;
   this.currentState = undefined;
@@ -464,22 +478,42 @@ Pointer.prototype.enterMap = function(map, blackboard) {
   this.blackboard.setFromPath([], map.initialBlackboard, map.blackboard);
 
   // Load any saved
+  _loadState(pointer);
 
-  // ra01 determino l'ultimo stato
-  let ref = admin.database().ref(this.app.map.botName+'/chats/'+this.app.chatId+'/currentState');
-  ref.once('value', function(snapshot) {
-    debugger;
-    if (snapshot.val() !== null)
-      // TODO inizializzare il blackboard
-      pointer.goTo(snapshot.val())
-    else  
-      pointer.goTo('origin');
-  }, function (errorObject) {
-    console.log("The read failed: " + errorObject.code);
-  });
+  // ra01 Costruisco la lavagna
+  // let chat = admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId);
+  // let children = chat.child('blackboard').child('children');
+  
+  // // Load blackboard with variables
+  // children.on('child_added', snap =>  {  
+  //     if (this.blackboard.children === undefined) {
+  //       this.blackboard.children = {};   
+  //     }
+  //     if (this.blackboard.children[snap.key] === undefined) { 
+  //       this.blackboard.children[snap.key] = new BBO();
+  //     }
+  //     if (snap.val().value !== undefined)
+  //       this.blackboard.children[snap.key].value = snap.val().value;
+  //     else {
+  //       _loadBlackBoard(this.blackboard.children[snap.key], snap.val().children);
+  //     }
+  // });
+  
+  // // ra01 determino l'ultimo stato
+  // chat.child('currentState').once('value', function(snapshot) {
+  //   if (snapshot.val() !== null) {
+  //     pointer.goTo(snapshot.val())
+  //   } else {
+  //     pointer.goTo('origin');
+  //   }
+  //   // Gestisco il messaggio in input
+  //   pointer.handleInput(pointer.app.message);
+  // }, function (errorObject) {
+  //   console.log("The read failed: " + errorObject.code);
+  // });
 
   
-  //this.goTo("origin");
+  //ra01 this.goTo("origin");
   
 };
 
@@ -525,37 +559,40 @@ Pointer.prototype.output = function (s, onFinishEach, onFinish) {
 // Gets queued text and outputs it.
 // This is called recursively
 Pointer.prototype.attemptOutput = function() {
-  debugger;
   var pointer = this;
   var section = pointer.outputQueue.shift();
-
   if (section && !pointer.isOccupied) {
+    console.log(pointer.app.chatId + ': ' + section.data);
+    pointer.attemptOutput();
+  }
+  // ra01 cancello la parte sotto perché emetto l'output tutto in una volta
+  //if (section && !pointer.isOccupied) {
 
     // Occupy this channel when in use
-    pointer.isOccupied = true;
+    //pointer.isOccupied = true;
 
     // Callback on text if text-only
 
     // Activate Chat with timer
     //ra01 tolto utilizzo della chat
     //chat.say(0, section.data);
-    console.log(pointer.app.chatId + ': ' + section.data);
+    
    // bottery.sendMessage(section.data);
 
     // on finish
-    function outputDone() {
-       if (section.onFinish)
-         section.onFinish();
-         pointer.isOccupied = false;
-         pointer.attemptOutput();
-    }
+    // function outputDone() {
+    //    if (section.onFinish)
+    //      section.onFinish();
+    //      pointer.isOccupied = false;
+    //      pointer.attemptOutput();
+    // }
 
     // ra01 L'outputMode solo testo ma non lascio il tempo di leggere
     // if (bottery.app.outputMode === "text") {
-       var readTime = Math.sqrt(section.data.length) * 50 + 200;
-       setTimeout(function() {
-        outputDone();
-    }, readTime);
+    //    var readTime = Math.sqrt(section.data.length) * 50 + 200;
+    //    setTimeout(function() {
+    //     outputDone();
+    // }, readTime);
     //} else {
       // ** both text+speech & speech should trigger this??
     //  io.textToSpeech(section.data, function() {
@@ -564,11 +601,11 @@ Pointer.prototype.attemptOutput = function() {
     //}
 
     //io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
-  } else {
-    // push it back on the queue
-    if (section !== undefined)
-    pointer.outputQueue.unshift(section);
-  }
+  // } else {
+  //   // push it back on the queue
+  //   if (section !== undefined)
+  //   pointer.outputQueue.unshift(section);
+  // }
 }
 
 function updateExit(exitAnalysis, pointer) {
@@ -622,5 +659,57 @@ function updateCondition(conditionAnalysis, pointer) {
   updateExit(conditionAnalysis.exitAnalysis, pointer);
 }
 
+async function _loadState(pointer) {
+  // ra01 Costruisco la lavagna
+  let chat = admin.database().ref(pointer.app.map.name+'/chats/'+pointer.app.chatId);
+  let children = chat.child('blackboard').child('children');
 
+  // Load blackboard with variables
+  children.on('child_added', snap =>  {  
+      if (pointer.blackboard.children === undefined) {
+        pointer.blackboard.children = {};   
+      }
+      if (pointer.blackboard.children[snap.key] === undefined) { 
+        pointer.blackboard.children[snap.key] = new BBO();
+      }
+      if (snap.val().value !== undefined)
+      pointer.blackboard.children[snap.key].value = snap.val().value;
+      else {
+        _loadBlackBoard(pointer.blackboard.children[snap.key], snap.val().children);
+      }
+  });
+
+  // ra01 determino l'ultimo stato
+  chat.child('currentState').once('value', function(snapshot) {
+    if (snapshot.val() !== null) {
+      pointer.goTo(snapshot.val())
+    } else {
+      pointer.goTo('origin');
+    }
+    // Gestisco il messaggio in input
+    pointer.handleInput(pointer.app.message);
+    pointer.update();
+  }, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
+  });
+
+}
+// Load blackboard with multidimensional array 
+function _loadBlackBoard(bbo, snap) {
+  for (var key in snap) {
+  
+    if (bbo.children === undefined) {
+      bbo.children = {};   
+    }
+    if (bbo.children[key] === undefined) { 
+      bbo.children[key] = new BBO();
+    }
+    if (snap[key].value !== undefined)
+      bbo.children[key].value = snap[key].value;
+    else {
+      console.log(snap[key].children);
+      _loadBlackBoard(bbo.children[key], snap[key].children);
+    }
+  }
+}
 module.exports = Pointer;
