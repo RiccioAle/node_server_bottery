@@ -28,10 +28,17 @@ var Pointer = function(app) {
 
   this.app = app;  //ra01 Aggiunto l'oggetto app
   this.outputQueue = [];  //ra01 preso da io
+  
+  this.reply = {
+    chatId: app.chatId,
+    message: [],
+    chips: {}
+  };
 
   this.exitCountdown = 0;
   this.inputLog = [];
   this.analyzedExits = [];
+  this.chatRef = admin.database().ref(app.map.name+'/chats/'+app.chatId);
   
 }
 
@@ -81,7 +88,7 @@ Pointer.prototype.handleInput = function(input) {
   if (input === "help") {
     // list various inputs
 
-  } else if (input === "start") {       //ra01 se start non elaboro ma avvio solo
+  } else if (input === "/start") {       //ra01 se start non elaboro ma avvio solo
   } else {
     console.log("INPUT: " + inQuotes(input));
     this.inputLog.push(input);
@@ -122,14 +129,14 @@ Pointer.prototype.clearInput = function() {
 
     // ra01 - riaggiornamento puntatore stato
     //if (t < this.app.chatId) {
-    if (pointer.app.numberUpdate < 100 && (
+    if (pointer.app.numberUpdate < 10 && (
       this.previusState === undefined ||
       this.previusState !== this.currentState)) {
       this.previusState = this.currentState;
-      //setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
-      //  setTimeout(function () {
-      //    pointer.update()
-      //   }, 1000);
+      // setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
+      //   setTimeout(function () {
+      //     pointer.update()
+      //    }, 100);
       this.update();
     } else {
        // salvo l'ultimo stato 
@@ -137,7 +144,7 @@ Pointer.prototype.clearInput = function() {
        this.blackboard.children.INPUT_NUMBER = null;
        this.blackboard.value = null;
        console.log(this.blackboard);
-       admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId).set({
+       admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId).update({
          currentState: this.currentState.key,
          blackboard: this.blackboard
        });
@@ -283,10 +290,12 @@ Pointer.prototype.enterState = function() {
 
   // ra01 - non utilizzo jQuery
   //$.each(this.currentState.onEnter, function(index, action) {
-  this.currentState.onEnter.forEach(function(action) {      //ra01
-    performAction(action, pointer);
-  });
-
+  if (this.currentState.key != this.resumeState) {
+    this.currentState.onEnter.forEach(function(action) {      //ra01
+      performAction(action, pointer);
+    });
+  }
+  this.resumeState = null;
 
 
   // Make chips
@@ -418,7 +427,7 @@ Pointer.prototype.collectExits = function() {
 };
 
 Pointer.prototype.enterMap = async function(map, blackboard)  {
-  debugger;
+ 
   var pointer = this; //ra01
   this.map = map;
   this.currentState = undefined;
@@ -476,42 +485,6 @@ Pointer.prototype.enterMap = async function(map, blackboard)  {
 
   // load the blackboard
   this.blackboard.setFromPath([], map.initialBlackboard, map.blackboard);
-
-  // Load any saved
-  _loadState(pointer);
-
-  // ra01 Costruisco la lavagna
-  // let chat = admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId);
-  // let children = chat.child('blackboard').child('children');
-  
-  // // Load blackboard with variables
-  // children.on('child_added', snap =>  {  
-  //     if (this.blackboard.children === undefined) {
-  //       this.blackboard.children = {};   
-  //     }
-  //     if (this.blackboard.children[snap.key] === undefined) { 
-  //       this.blackboard.children[snap.key] = new BBO();
-  //     }
-  //     if (snap.val().value !== undefined)
-  //       this.blackboard.children[snap.key].value = snap.val().value;
-  //     else {
-  //       _loadBlackBoard(this.blackboard.children[snap.key], snap.val().children);
-  //     }
-  // });
-  
-  // // ra01 determino l'ultimo stato
-  // chat.child('currentState').once('value', function(snapshot) {
-  //   if (snapshot.val() !== null) {
-  //     pointer.goTo(snapshot.val())
-  //   } else {
-  //     pointer.goTo('origin');
-  //   }
-  //   // Gestisco il messaggio in input
-  //   pointer.handleInput(pointer.app.message);
-  // }, function (errorObject) {
-  //   console.log("The read failed: " + errorObject.code);
-  // });
-
   
   //ra01 this.goTo("origin");
   
@@ -563,6 +536,8 @@ Pointer.prototype.attemptOutput = function() {
   var section = pointer.outputQueue.shift();
   if (section && !pointer.isOccupied) {
     console.log(pointer.app.chatId + ': ' + section.data);
+    // Save message on firebase
+    _saveMessage(section.data, pointer);
     pointer.attemptOutput();
   }
   // ra01 cancello la parte sotto perché emetto l'output tutto in una volta
@@ -659,57 +634,14 @@ function updateCondition(conditionAnalysis, pointer) {
   updateExit(conditionAnalysis.exitAnalysis, pointer);
 }
 
-async function _loadState(pointer) {
-  // ra01 Costruisco la lavagna
-  let chat = admin.database().ref(pointer.app.map.name+'/chats/'+pointer.app.chatId);
-  let children = chat.child('blackboard').child('children');
 
-  // Load blackboard with variables
-  children.on('child_added', snap =>  {  
-      if (pointer.blackboard.children === undefined) {
-        pointer.blackboard.children = {};   
-      }
-      if (pointer.blackboard.children[snap.key] === undefined) { 
-        pointer.blackboard.children[snap.key] = new BBO();
-      }
-      if (snap.val().value !== undefined)
-      pointer.blackboard.children[snap.key].value = snap.val().value;
-      else {
-        _loadBlackBoard(pointer.blackboard.children[snap.key], snap.val().children);
-      }
-  });
-
-  // ra01 determino l'ultimo stato
-  chat.child('currentState').once('value', function(snapshot) {
-    if (snapshot.val() !== null) {
-      pointer.goTo(snapshot.val())
-    } else {
-      pointer.goTo('origin');
-    }
-    // Gestisco il messaggio in input
-    pointer.handleInput(pointer.app.message);
-    pointer.update();
-  }, function (errorObject) {
-    console.log("The read failed: " + errorObject.code);
-  });
-
-}
-// Load blackboard with multidimensional array 
-function _loadBlackBoard(bbo, snap) {
-  for (var key in snap) {
-  
-    if (bbo.children === undefined) {
-      bbo.children = {};   
-    }
-    if (bbo.children[key] === undefined) { 
-      bbo.children[key] = new BBO();
-    }
-    if (snap[key].value !== undefined)
-      bbo.children[key].value = snap[key].value;
-    else {
-      console.log(snap[key].children);
-      _loadBlackBoard(bbo.children[key], snap[key].children);
-    }
+// save message on firebase
+function _saveMessage (message, pointer) {
+  if (isString(message)) {
+    pointer.reply.message.push(message);
+    if (pointer.currentState.chips.length > 0)
+      pointer.reply.chips = pointer.currentState.chips;
   }
+  
 }
 module.exports = Pointer;
