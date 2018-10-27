@@ -1,8 +1,8 @@
 
 // Import other modules
-var parseMap = require('./src/map.js').parseMap;
-const App = require('./src/app.js');
-var BBO = require('./src/blackboard3.js').BBO;
+var parseMap = require('./bottery/map.js').parseMap;
+const App = require('./bottery/app.js');
+var BBO = require('./bottery/blackboard3.js').BBO;
 
 const serviceAccount = require('./serviceAccountKey.json')
 global.admin = require('firebase-admin');
@@ -17,7 +17,7 @@ var bottery = async (botName, chatId, message) => {
 
   // load requested bot
   console.info('Load map '+botName);
-  var raw = require('./src/bots/'+botName +'.js');
+  var raw = require('./bots/'+botName +'.js');
 
   // Bot not found
   if (!raw) 

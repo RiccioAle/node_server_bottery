@@ -44,11 +44,5 @@ slimbot.on('message', message => {
   });
 });
 
-slimbot.on('edited_message', edited_message => {
-  // reply when user edits a message
-  console.log('Riceived edited_message');
-  bottery('mastermind', message.chat.id, message.text);
-});
-
 // Call API
 slimbot.startPolling();
