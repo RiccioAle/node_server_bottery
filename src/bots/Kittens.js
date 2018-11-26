@@ -1,4 +1,4 @@
-bot = {
+module.exports = {
   grammar: {
     noun: ["cat", "monkey","butter", "pants", "demon", "fluff", "taco", "mountain", "butt"],
     adj: ["fluffy", "fat", "puff", "tepid", "love", "unruly"],

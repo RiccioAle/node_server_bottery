@@ -8,7 +8,7 @@ const bottery = require('./bottery');
 slimbot.on('message', message => {
   // reply when user sends a message
   console.log('Riceived message');
-  bottery('weather', message.chat.id, message.text)
+  bottery('kittens', message.chat.id, message.text)
   .then((reply) => {
     console.log('reply:'+reply);
     let msg = '';

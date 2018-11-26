@@ -300,17 +300,13 @@ Pointer.prototype.enterState = function() {
 
   // Make chips
   if (this.currentState.chips) {
+    debugger;
     if (isString(this.currentState.chips))
       this.currentState.chips = [this.currentState.chips];
     //ra01 tolto utilizzo della chat
-    //chat.setChips(this.currentState.chips.map(function(chip) {
-    // var s = pointer.flatten(chip);
-
-    //  return {
-    //    displayText: s,
-    //    inputText: s
-    //  }
-    //}));
+    this.currentState.chips = this.currentState.chips.map(chip => pointer.flatten(chip));
+    if (pointer.currentState.chips.length > 0)
+        pointer.reply.chips = pointer.currentState.chips;
   }
 
 
@@ -537,7 +533,10 @@ Pointer.prototype.attemptOutput = function() {
   if (section && !pointer.isOccupied) {
     console.log(pointer.app.chatId + ': ' + section.data);
     // Save message on firebase
-    _saveMessage(section.data, pointer);
+    //_saveMessage(section.data, pointer);
+    if (isString(section.data)) {
+      pointer.reply.message.push(section.data);
+    }
     pointer.attemptOutput();
   }
   // ra01 cancello la parte sotto perché emetto l'output tutto in una volta
@@ -634,14 +633,4 @@ function updateCondition(conditionAnalysis, pointer) {
   updateExit(conditionAnalysis.exitAnalysis, pointer);
 }
 
-
-// save message on firebase
-function _saveMessage (message, pointer) {
-  if (isString(message)) {
-    pointer.reply.message.push(message);
-    if (pointer.currentState.chips.length > 0)
-      pointer.reply.chips = pointer.currentState.chips;
-  }
-  
-}
 module.exports = Pointer;

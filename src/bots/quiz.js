@@ -1,4 +1,4 @@
-bot = {
+module.exports = {
   states: {
     origin: {
       onEnterSay: "Welcome to the hip hop name quiz\nI'll ask you some questions to determine your optimal hiphop DJ name\nAnswer each question with 'one' or 'two', or 'reset' to start over",

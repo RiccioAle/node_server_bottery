@@ -180,14 +180,6 @@ BBO.prototype.removeAt = function(key) {
   }
 };
 
-BBO.prototype.createView = function(holder) {
-
-  // ra01 - no Html
-  // this.view = $("<div/>", {
-  //   class: "bbo"
-  // }).appendTo(holder);
-
-};
 
 function createBasicFunctions() {
   var basicFunctions = {

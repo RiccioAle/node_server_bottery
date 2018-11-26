@@ -1,4 +1,4 @@
-bot = {
+module.exports = {
   grammar: {
     furTextureBase: ["fluffy", "curling", "smooth", "silky", "shiny", "iridescent", "long"],
     fur: ["fur", "feathers", "scales"],

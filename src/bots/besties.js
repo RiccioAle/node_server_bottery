@@ -1,4 +1,4 @@
-bot = {
+module.exports = {
   states: {
     origin: {
       onEnterSay: "Let's play Besties.\nGot your bestie ready?",
