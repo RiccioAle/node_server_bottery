@@ -13,25 +13,23 @@
 // limitations under the License.
 
 // ra01 - Minimizzato codice
-var tracery = require('./tracery.js').tracery; //ra01
-var inQuotes = require('./tracery.js').inQuotes; //ra01
-var isString = require('./tracery.js').isString; //ra01
-var BBO = require('./blackboard.js').BBO;// Oggetti presenti nella lavagna
-var performAction = require('./map.js').performAction; //ra01
-var evaluateCondition = require('./map.js').evaluateCondition; //ra01
-var evaluateExpression = require('./map.js').evaluateExpression; //ra01
-var parseMapPath = require('./map.js').parseMapPath; //ra01   
+var tracery = require('./tracery.js').tracery; 
+var inQuotes = require('./tracery.js').inQuotes;
+var isString = require('./tracery.js').isString; 
+var BBO = require('./blackboard.js').BBO;
+var performAction = require('./map.js').performAction;
+var evaluateCondition = require('./map.js').evaluateCondition; 
+var evaluateExpression = require('./map.js').evaluateExpression; 
+var parseMapPath = require('./map.js').parseMapPath;  
 
 // Riceve l'id della chat
 var Pointer = function(chatId, message, map) {
-  //var pointer = this;
-
-  //this.app = app;  //ra01 Aggiunto l'oggetto app
+  
   this.chatId = chatId;
   this.message = message;
   this.map = map;
   this.numberUpdate = 0;    
-  this.outputQueue = [];  //ra01 preso da io
+  this.outputQueue = []; 
   
   this.reply = {
     chatId: chatId,
@@ -42,7 +40,6 @@ var Pointer = function(chatId, message, map) {
   this.exitCountdown = 0;
   this.inputLog = [];
   this.analyzedExits = [];
-  this.chatRef = admin.database().ref(map.name+'/chats/'+chatId);
   
 }
 
@@ -83,7 +80,7 @@ Pointer.prototype.set = function(path, val) {
   // Underscores save to localstorage
   var last = steps[steps.length - 1];
 
-  if (steps.length === 1 && steps[0].startsWith("_")) {
+  //if (steps.length === 1 && steps[0].startsWith("_")) {
     //io.saveData(app.map, steps[0], val)
   }
 }
@@ -118,12 +115,6 @@ Pointer.prototype.clearInput = function() {
     // number of loop for change state
     pointer.numberUpdate++;
 
-    //ra01 ar t = Date.now() - app.start;
-    // var t = Date.now() - this.app.start;             ra02
-    // this.timeInState = t - this.timeEnteredState;    ra02
-    // this.timeInState *= .001;                        ra02
-    // t *= .001;                                       ra02
-    //this.blackboard.setFromPath("TIME_IN_STATE", this.timeInState);
 
     if (this.selectedExit)
       this.useExit(this.selectedExit);
@@ -131,19 +122,14 @@ Pointer.prototype.clearInput = function() {
 
     this.updateExits();
 
-    // ra01 - riaggiornamento puntatore stato
-    //if (t < this.app.chatId) {
+    // recursive recall
     if (pointer.numberUpdate < 10 && (
       this.previusState === undefined ||
       this.previusState !== this.currentState)) {
       this.previusState = this.currentState;
-      // setTimeout(function () {pointer.update()}, Math.pow(1 - 0.5, 2) * 450 + 100);
-      //   setTimeout(function () {
-      //     pointer.update()
-      //    }, 100);
       this.update();
     } else {
-       // salvo l'ultimo stato 
+       // save the last state and blackboard 
        this.blackboard.children.INPUT = null;
        this.blackboard.children.INPUT_NUMBER = null;
        this.blackboard.value = null;
@@ -241,7 +227,18 @@ Pointer.prototype.goTo = function(key, useExit) {
   }
 
   if (useExit) {
-    //ra01 $.each(useExit.template.actions, function(index, action) {
+    // TODO ra01 set star IDENTIFICATOR
+    if (useExit.template.actions[0] &&
+      useExit.template.actions[0].expression.raw == 'STAR') {
+      let input = this.get('INPUT');
+      let posAst = useExit.template.conditions[0].rule.indexOf("*");
+      let prefix = useExit.template.conditions[0].rule.substring(0, posAst);
+      let suffix = useExit.template.conditions[0].rule.substring(posAst+1);
+      let star = input.replace(prefix, "");
+      star = star.replace(suffix, "");
+      this.set('STAR', star);
+    }
+    // $.each(useExit.template.actions, function(index, action) {
     useExit.template.actions.forEach(function(action) {
       performAction(action, pointer);
     });
@@ -255,7 +252,6 @@ Pointer.prototype.goTo = function(key, useExit) {
 
     this.currentState = nextState;
     if (this.currentState) {
-     //ra01 viz.setClassesExclusive(this.currentState, "active");
       
       this.enterState(this.currentState);
     }
@@ -286,16 +282,11 @@ Pointer.prototype.exitState = function() {
 
 Pointer.prototype.enterState = function() {
   
-  //ra01 viz.removeExitClasses();
-
-  //ra01 this.timeEnteredState = Date.now() - app.start;
-  //this.timeEnteredState = Date.now() - this.app.start;
   var pointer = this;
 
-  // ra01 - non utilizzo jQuery
   //$.each(this.currentState.onEnter, function(index, action) {
   if (this.currentState.key != this.resumeState) {
-    this.currentState.onEnter.forEach(function(action) {      //ra01
+    this.currentState.onEnter.forEach(function(action) {      
       performAction(action, pointer);
     });
   }
@@ -307,15 +298,11 @@ Pointer.prototype.enterState = function() {
     debugger;
     if (isString(this.currentState.chips))
       this.currentState.chips = [this.currentState.chips];
-    //ra01 tolto utilizzo della chat
+    
     this.currentState.chips = this.currentState.chips.map(chip => pointer.flatten(chip));
     if (pointer.currentState.chips.length > 0)
         pointer.reply.chips = pointer.currentState.chips;
   }
-
-
-  // Update the view
-  //ra01 this.stateView.state.html(this.currentState.key);
 
 
   // Clear inputs before triggering any exits
@@ -326,17 +313,14 @@ Pointer.prototype.enterState = function() {
 
 Pointer.prototype.selectExit = function(exit) {
 
-  //ra01 $(".mapinfo-exit").removeClass("selected");
-  //ra01 $(".mapinfo-" + exit.template.key).addClass("selected");
   this.selectedExit = exit;
-  //ra01 - Nessuna attesa
-  //ra01this.exitCountdown = Math.ceil(10 * Math.pow(app.exitPause, 2));
+  // don't wait
+  //this.exitCountdown = Math.ceil(10 * Math.pow(app.exitPause, 2));
   this.exitCountdown = 0;
-  //ra01 viz.setClassesExclusive(this.selectedExit, "active");
+
 };
 
 Pointer.prototype.deselectExit = function(exit) {
-  //ra01 $(".mapinfo-" + exit.template.key).removeClass("selected");
   this.selectedExit = undefined;
 };
 
@@ -380,58 +364,15 @@ Pointer.prototype.collectExits = function() {
   });
 
 
-  //ra01 this.stateView.exits.html("");
-
-  // create views for the avaiable exits
-  // ra01 - tolto questa funzione
-  //this.exitViews = this.analyzedExits.map(function(exit) {
-
-    // Add to the state view (on the blackboard)
-
-
-    // exit.div = $("<div/>", {
-    //   class: "mapinfo-exit mapinfo-" + exit.template.key,
-    // }).appendTo(pointer.stateView.exits).click(function() {
-    //   if (pointer.selectedExit === exit) {
-    //     pointer.deselectExit(exit);
-    //   } else {
-    //     pointer.selectExit(exit);
-    //   }
-    // });
-
-    // var exitName = $("<div/>", {
-    //   class: "mapinfo-exitname",
-    //   html: exit.template.target.raw
-    // }).appendTo(exit.div);
-    //
-    // var conditions = $("<div/>", {
-    //   class: "mapinfo-conditions",
-    // }).appendTo(exit.div);
-
-
-  //   $.each(exit.conditions, function(index, conditionAnalysis) {
-  //
-  //     if (conditionAnalysis.template) {
-  //       conditionAnalysis.div = $("<div/>", {
-  //         html: conditionAnalysis.template.raw,
-  //         class: "mapinfo-condition mapinfo-" + conditionAnalysis.template.key,
-  //       }).appendTo(conditions).click(function() {
-  //         console.log("Clicked condition " + conditionAnalysis.template.raw);
-  //         conditionAnalysis.manualOverride = !conditionAnalysis.manualOverride;
-  //         updateCondition(conditionAnalysis, pointer);
-  //       });
-  //     }
-  //   });
-  //
-  // });
+  
 };
 
 Pointer.prototype.enterMap = async function(map, blackboard)  {
  
-  var pointer = this; //ra01
+  var pointer = this; 
   this.map = map;
   this.currentState = undefined;
-  this.previusState = undefined;      //ra01 Salva lo stato precedente
+  this.previusState = undefined;      //Save previus state
 
   if (!map.grammar)
     map.grammar = {};
@@ -451,42 +392,14 @@ Pointer.prototype.enterMap = async function(map, blackboard)  {
 
   }
 
-  //ra01 $("#panel-blackboard .panel-content").html("");
-  //ra01 $("#panel-stateview .panel-content").html("");
-
-  //ra01 this.view = $("<div/>", {
-  //ra01   class: "mapinfo-view"
-  //ra01 }).appendTo($("#panel-blackboard .panel-content"));
-
-
-  // ra01
-  // this.stateView = $("<div/>", {
-  //   class: "mapinfo-stateview"
-  // }).appendTo($("#panel-stateview .panel-content"));
-
-  // this.stateView.state = $("<div/>", {
-  //   class: "mapinfo-state"
-  // }).appendTo(this.stateView);
-  //
-  // this.stateView.exits = $("<div/>", {
-  //   class: "mapinfo-exits"
-  // }).appendTo(this.stateView);
-  //
-  //
-  // this.blackboardView = $("<div/>", {
-  //   class: "mapinfo-bbview"
-  // }).appendTo(this.view);
-
   if (blackboard)
      this.blackboard = blackboard;
   else
-     //this.blackboard = new BBO(this.blackboardView);
      this.blackboard = new BBO();
 
   // load the blackboard
   this.blackboard.setFromPath([], map.initialBlackboard, map.blackboard);
   
-  //ra01 this.goTo("origin");
   
 };
 
@@ -536,54 +449,13 @@ Pointer.prototype.attemptOutput = function() {
   var section = pointer.outputQueue.shift();
   if (section && !pointer.isOccupied) {
     console.log(pointer.chatId + ': ' + section.data);
-    // Save message on firebase
-    //_saveMessage(section.data, pointer);
+    
     if (isString(section.data)) {
       pointer.reply.message.push(section.data);
     }
     pointer.attemptOutput();
   }
-  // ra01 cancello la parte sotto perché emetto l'output tutto in una volta
-  //if (section && !pointer.isOccupied) {
 
-    // Occupy this channel when in use
-    //pointer.isOccupied = true;
-
-    // Callback on text if text-only
-
-    // Activate Chat with timer
-    //ra01 tolto utilizzo della chat
-    //chat.say(0, section.data);
-    
-   // bottery.sendMessage(section.data);
-
-    // on finish
-    // function outputDone() {
-    //    if (section.onFinish)
-    //      section.onFinish();
-    //      pointer.isOccupied = false;
-    //      pointer.attemptOutput();
-    // }
-
-    // ra01 L'outputMode solo testo ma non lascio il tempo di leggere
-    // if (bottery.app.outputMode === "text") {
-    //    var readTime = Math.sqrt(section.data.length) * 50 + 200;
-    //    setTimeout(function() {
-    //     outputDone();
-    // }, readTime);
-    //} else {
-      // ** both text+speech & speech should trigger this??
-    //  io.textToSpeech(section.data, function() {
-    //    outputDone();
-    //  });
-    //}
-
-    //io.debugLog("Ouput" + inParens(io.outputMode) + ":" + inQuotes(section.data));
-  // } else {
-  //   // push it back on the queue
-  //   if (section !== undefined)
-  //   pointer.outputQueue.unshift(section);
-  // }
 }
 
 function updateExit(exitAnalysis, pointer) {
@@ -596,14 +468,9 @@ function updateExit(exitAnalysis, pointer) {
   if (val !== exitAnalysis.isOpen) {
 
     exitAnalysis.isOpen = val;
-    //ra01 if (exitAnalysis.isOpen)
-    //ra01   exitAnalysis.div.addClass("open");
-    //ra01 else
-    //ra01  exitAnalysis.div.removeClass("open");
+  
   }
 
-
-   //ra01 viz.setClassesIf(exitAnalysis.template, "open", exitAnalysis.isOpen);
 }
 
 function updateCondition(conditionAnalysis, pointer) {
@@ -617,19 +484,7 @@ function updateCondition(conditionAnalysis, pointer) {
   }
 
   if (val !== conditionAnalysis.isFulfilled) {
-    // A change has occured, update and notify
-
-    // ra01 - non aggiorno
-    // if (val)
-    //   conditionAnalysis.div.addClass("open");
-    // else
-    //   conditionAnalysis.div.removeClass("open");
-    //
-    // if (conditionAnalysis.manualOverride)
-    //   conditionAnalysis.div.addClass("override");
-    // else
-    //   conditionAnalysis.div.removeClass("override");
-
+    
     conditionAnalysis.isFulfilled = val;
   }
 

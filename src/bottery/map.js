@@ -20,13 +20,7 @@ var inQuotes = require('./tracery.js').inQuotes; //ra01
 var isInQuotes = require('./tracery.js').isInQuotes; //ra01
 var isInParentheses = require('./tracery.js').isInParentheses; //ra01
 var splitOnUnprotected = require('./tracery.js').splitOnUnprotected; //ra01
-var getUnprotectedIndices = require('./tracery.js').getUnprotectedIndices; //ra01
 var splitIntoTopSections = require('./tracery.js').splitIntoTopSections; //ra01
-var tracery = require('./tracery.js').tracery; //ra01
-//var io = require('./io.js'); // Gestione input ed output
-
-
-
 
 var openChars = "#{[('\"";
 var closeChars = "#}])'\"";
