@@ -1,8 +1,8 @@
 
 // Import other modules
 var parseMap = require('./bottery/map.js').parseMap;
-var Pointer = require('./bottery/pointer2.js');
-var BBO = require('./bottery/blackboard3.js').BBO;
+var Pointer = require('./bottery/pointer.js');
+var BBO = require('./bottery/blackboard.js').BBO;
 
 const serviceAccount = require('./serviceAccountKey.json')
 global.admin = require('firebase-admin');

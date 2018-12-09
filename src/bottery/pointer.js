@@ -16,7 +16,7 @@
 var tracery = require('./tracery.js').tracery; //ra01
 var inQuotes = require('./tracery.js').inQuotes; //ra01
 var isString = require('./tracery.js').isString; //ra01
-var BBO = require('./blackboard3.js').BBO;// Oggetti presenti nella lavagna
+var BBO = require('./blackboard.js').BBO;// Oggetti presenti nella lavagna
 var performAction = require('./map.js').performAction; //ra01
 var evaluateCondition = require('./map.js').evaluateCondition; //ra01
 var evaluateExpression = require('./map.js').evaluateExpression; //ra01

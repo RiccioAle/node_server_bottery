@@ -1,7 +1,7 @@
 
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot('600516703:AAFnCfuojgh84YTzdd8jV9N0sdwkuc316nM');
-const bottery = require('./bottery2');
+const bottery = require('./bottery');
 
 
 // Register listeners
