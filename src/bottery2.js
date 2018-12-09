@@ -1,7 +1,7 @@
 
 // Import other modules
 var parseMap = require('./bottery/map.js').parseMap;
-const App = require('./bottery/app.js');
+var Pointer = require('./bottery/pointer2.js');
 var BBO = require('./bottery/blackboard3.js').BBO;
 
 const serviceAccount = require('./serviceAccountKey.json')
@@ -33,17 +33,18 @@ var bottery = async (botName, chatId, message) => {
   var map = parseMap(raw);
   map.name = botName;
 
-  var app = new App(chatId, message, map);
-  await _loadState(app.pointer); 
+  var pointer = new Pointer(chatId, message, map);
+  pointer.enterMap(map);
+  await _loadState(pointer); 
  
-  return app.pointer.reply;
+  return pointer.reply;
   
 };
 
 // this function resume the last state for the chat
 async function _loadState(pointer) {
   
-  let chat = admin.database().ref(pointer.app.map.name+'/chats/'+pointer.app.chatId);
+  let chat = admin.database().ref(pointer.map.name+'/chats/'+pointer.chatId);
   let children = chat.child('blackboard').child('children');
   
   // Load blackboard with variables
@@ -69,7 +70,7 @@ async function _loadState(pointer) {
           pointer.goTo('origin');
         }
         // Gestisco il messaggio in input
-        pointer.handleInput(pointer.app.message);
+        pointer.handleInput(pointer.message);
         pointer.update();
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);

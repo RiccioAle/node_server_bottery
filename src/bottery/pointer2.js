@@ -23,14 +23,18 @@ var evaluateExpression = require('./map.js').evaluateExpression; //ra01
 var parseMapPath = require('./map.js').parseMapPath; //ra01   
 
 // Riceve l'id della chat
-var Pointer = function(app) {
+var Pointer = function(chatId, message, map) {
   //var pointer = this;
 
-  this.app = app;  //ra01 Aggiunto l'oggetto app
+  //this.app = app;  //ra01 Aggiunto l'oggetto app
+  this.chatId = chatId;
+  this.message = message;
+  this.map = map;
+  this.numberUpdate = 0;    
   this.outputQueue = [];  //ra01 preso da io
   
   this.reply = {
-    chatId: app.chatId,
+    chatId: chatId,
     message: [],
     chips: {}
   };
@@ -38,7 +42,7 @@ var Pointer = function(app) {
   this.exitCountdown = 0;
   this.inputLog = [];
   this.analyzedExits = [];
-  this.chatRef = admin.database().ref(app.map.name+'/chats/'+app.chatId);
+  this.chatRef = admin.database().ref(map.name+'/chats/'+chatId);
   
 }
 
@@ -112,13 +116,13 @@ Pointer.prototype.clearInput = function() {
   Pointer.prototype.update = function() {
     var pointer = this;
     // number of loop for change state
-    pointer.app.numberUpdate++;
+    pointer.numberUpdate++;
 
     //ra01 ar t = Date.now() - app.start;
-    var t = Date.now() - this.app.start;
-    this.timeInState = t - this.timeEnteredState;
-    this.timeInState *= .001;
-    t *= .001;
+    // var t = Date.now() - this.app.start;             ra02
+    // this.timeInState = t - this.timeEnteredState;    ra02
+    // this.timeInState *= .001;                        ra02
+    // t *= .001;                                       ra02
     //this.blackboard.setFromPath("TIME_IN_STATE", this.timeInState);
 
     if (this.selectedExit)
@@ -129,7 +133,7 @@ Pointer.prototype.clearInput = function() {
 
     // ra01 - riaggiornamento puntatore stato
     //if (t < this.app.chatId) {
-    if (pointer.app.numberUpdate < 10 && (
+    if (pointer.numberUpdate < 10 && (
       this.previusState === undefined ||
       this.previusState !== this.currentState)) {
       this.previusState = this.currentState;
@@ -144,7 +148,7 @@ Pointer.prototype.clearInput = function() {
        this.blackboard.children.INPUT_NUMBER = null;
        this.blackboard.value = null;
        console.log(this.blackboard);
-       admin.database().ref(pointer.app.map.name+'/chats/'+this.app.chatId).update({
+       admin.database().ref(pointer.map.name+'/chats/'+this.chatId).update({
          currentState: this.currentState.key,
          blackboard: this.blackboard
        });
@@ -285,7 +289,7 @@ Pointer.prototype.enterState = function() {
   //ra01 viz.removeExitClasses();
 
   //ra01 this.timeEnteredState = Date.now() - app.start;
-  this.timeEnteredState = Date.now() - this.app.start;
+  //this.timeEnteredState = Date.now() - this.app.start;
   var pointer = this;
 
   // ra01 - non utilizzo jQuery
@@ -531,7 +535,7 @@ Pointer.prototype.attemptOutput = function() {
   var pointer = this;
   var section = pointer.outputQueue.shift();
   if (section && !pointer.isOccupied) {
-    console.log(pointer.app.chatId + ': ' + section.data);
+    console.log(pointer.chatId + ': ' + section.data);
     // Save message on firebase
     //_saveMessage(section.data, pointer);
     if (isString(section.data)) {
