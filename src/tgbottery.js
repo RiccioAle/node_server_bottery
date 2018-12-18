@@ -2,13 +2,14 @@
 const Slimbot = require('slimbot');
 const slimbot = new Slimbot('600516703:AAFnCfuojgh84YTzdd8jV9N0sdwkuc316nM');
 const bottery = require('./bottery');
+const script  = 'kittens';
 
 
 // Register listeners
 slimbot.on('message', message => {
   // reply when user sends a message
   console.log('Riceived message');
-  bottery('kittens', message.chat.id, message.text)
+  bottery(script, message.chat.id, message.text)
   .then((reply) => {
     console.log('reply:'+reply);
     let msg = '';

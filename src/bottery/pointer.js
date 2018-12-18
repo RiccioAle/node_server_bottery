@@ -80,9 +80,6 @@ Pointer.prototype.set = function(path, val) {
   // Underscores save to localstorage
   var last = steps[steps.length - 1];
 
-  //if (steps.length === 1 && steps[0].startsWith("_")) {
-    //io.saveData(app.map, steps[0], val)
-  }
 }
 
 Pointer.prototype.handleInput = function(input) {
