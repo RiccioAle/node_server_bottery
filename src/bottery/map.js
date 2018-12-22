@@ -851,6 +851,16 @@ function evaluateCondition(condition, pointer) {
       //console.log("test input " + pointer.lastInput + condition.rule);
       // TODO more sophisticated input evaluation
 
+      // Ra01: check the variable into the string
+      if (condition.rule.indexOf('*')) {
+        if (pointer.lastInput !== undefined) {
+          let posAst = condition.rule.indexOf("*");
+          let prefix = condition.rule.substring(0, posAst);
+          let suffix = condition.rule.substring(posAst+1);
+          return pointer.lastInput.startsWith(prefix) && pointer.lastInput.endsWith(suffix)
+        } else return false;
+      }
+
       if (condition.rule === "*") {
         return pointer.lastInput !== undefined && pointer.lastInput.length > 0;
       }
