@@ -855,9 +855,10 @@ function evaluateCondition(condition, pointer) {
       if (condition.rule.indexOf('*')) {
         if (pointer.lastInput !== undefined) {
           let posAst = condition.rule.indexOf("*");
-          let prefix = condition.rule.substring(0, posAst);
-          let suffix = condition.rule.substring(posAst+1);
-          return pointer.lastInput.startsWith(prefix) && pointer.lastInput.endsWith(suffix)
+          let prefix = condition.rule.substring(0, posAst).toUpperCase();
+          let suffix = condition.rule.substring(posAst+1).toUpperCase();
+          return pointer.lastInput.toUpperCase().startsWith(prefix) && 
+                 pointer.lastInput.toUpperCase().endsWith(suffix)
         } else return false;
       }
 
@@ -868,7 +869,7 @@ function evaluateCondition(condition, pointer) {
       if (condition.rule === "NUMBER") {
         return !isNaN(parseFloat(pointer.lastInput))
       }
-      return pointer.lastInput === condition.rule;
+      return pointer.lastInput.toUpperCase() === condition.rule.toUpperCase();
 
     case "value":
       switch (condition.target) {
